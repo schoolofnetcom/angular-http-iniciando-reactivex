@@ -1,14 +1,16 @@
-<modal-title>
-    <h5>Excluir empregado {{employee?.name}}</h5>
-</modal-title>
-<modal-body>
-    <div>
-        Deseja excluir o empregado {{employee?.name}}?
-    </div>
-</modal-body>
-<modal-footer>
-    <div>
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" (click)="destroy()">Excluir</button>
-    </div>
-</modal-footer>
+<ng-container *ngIf="(employee$|async) as employee">
+    <modal-title>
+        <h5>Excluir empregado {{employee.name}}</h5>
+    </modal-title>
+    <modal-body>
+        <div>
+            Deseja excluir o empregado {{employee.name}}?
+        </div>
+    </modal-body>
+    <modal-footer>
+        <div>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary" (click)="destroy()">Excluir</button>
+        </div>
+    </modal-footer>
+</ng-container>

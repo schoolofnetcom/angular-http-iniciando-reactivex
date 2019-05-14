@@ -18,10 +18,14 @@
                 </td>
             </tr>
             <tr>
-                <th [sortColumn]="sortColumn" columnName="name" (onSort)="handleSort($event)">Nome</th>
-                <th [sortColumn]="sortColumn" columnName="salary" (onSort)="handleSort($event)">Salário</th>
-                <th>Bônus</th>
-                <th>Ações</th>
+                <ng-container *ngFor="let column of columns">
+                    <ng-container *ngIf="column.order">
+                        <th [sortColumn]="sortColumn" [columnName]="column.name" (onSort)="handleSort($event)">{{column.label}}</th>
+                    </ng-container>
+                    <ng-container *ngIf="!column.order">
+                        <th>{{column.label}}</th>
+                    </ng-container>
+                </ng-container>
             </tr>
             </thead>
             <tbody>
@@ -38,6 +42,9 @@
                     <a href="javascript:void(0)" (click)="openEditModal(employee)">Editar</a> |
                     <a href="javascript:void(0)" (click)="openDestroyModal(employee)">Excluir</a>
                 </td>
+            </tr>
+            <tr *ngIf="!employees.length">
+                <td [colSpan]="columns.length" style="text-align: center">Nenhum registro encontrado</td>
             </tr>
             </tbody>
         </table>

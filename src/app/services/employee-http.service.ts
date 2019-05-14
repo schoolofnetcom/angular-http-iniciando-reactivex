@@ -3,15 +3,18 @@ import {HttpClient, HttpErrorResponse, HttpParams, HttpResponse} from '@angular/
 import {Employee} from '../models';
 import {Observable, throwError} from 'rxjs';
 import {NotifyMessageService} from './notify-message.service';
-import {catchError} from 'rxjs/operators';
+import {catchError, map, tap, first, take} from 'rxjs/operators';
 
 interface ListHttpParams {
     search;
     sort: { column, sort };
-    pagination: {
-        page: number;
-        perPage: number;
-    };
+    pagination: Pagination;
+}
+
+interface Pagination {
+    page: number;
+    perPage: number;
+    total?: number;
 }
 
 @Injectable({
@@ -24,7 +27,7 @@ export class EmployeeHttpService {
     constructor(private http: HttpClient, private notifyMessage: NotifyMessageService) {
     }
 
-    list({search, sort, pagination}: ListHttpParams): Observable<HttpResponse<Employee[]>> {
+    list({search, sort, pagination}: ListHttpParams): Observable<{ data: Employee[], meta: Pagination }> {
         let filterObj = {
             _sort: sort.column,
             _order: sort.sort,
@@ -40,6 +43,18 @@ export class EmployeeHttpService {
         });
         return this.http.get<Employee[]>(this.baseUrl, {params, observe: 'response'})
             .pipe(
+                first(),
+                map(response => {
+                    return {
+                        data: response.body,
+                        meta: {
+                            page: pagination.page,
+                            perPage: pagination.perPage,
+                            total: +response.headers.get('X-Total-Count')
+                        }
+                    };
+                }),
+                tap(console.log),
                 catchError((responseError) => this.handleError(responseError))
             );
     }
@@ -47,6 +62,7 @@ export class EmployeeHttpService {
     get(id: number): Observable<Employee> {
         return this.http.get<Employee>(`${this.baseUrl}/${id}`)
             .pipe(
+                first(),
                 catchError((responseError) => this.handleError(responseError))
             );
     }
@@ -54,6 +70,7 @@ export class EmployeeHttpService {
     create(data: Employee): Observable<Employee> {
         return this.http.post<Employee>(this.baseUrl, data)
             .pipe(
+                first(),
                 catchError((responseError) => this.handleError(responseError))
             );
     }
@@ -61,6 +78,7 @@ export class EmployeeHttpService {
     update(data: Employee): Observable<Employee> {
         return this.http.put<Employee>(`${this.baseUrl}/${data.id}`, data)
             .pipe(
+                first(),
                 catchError((responseError) => this.handleError(responseError))
             );
     }
@@ -68,7 +86,8 @@ export class EmployeeHttpService {
     delete(id: number): Observable<any> {
         return this.http.delete(`${this.baseUrl}/${id}`)
             .pipe(
-                catchError((responseError) => this.handleError(responseError))
+                first(),
+                catchError((responseError) => this.handleError(responseError)),
             );
     }
 
@@ -79,18 +98,15 @@ export class EmployeeHttpService {
             // client-side error
             errorMessage = `Erro: ${error.error.message}`;
         } else {
-            //422
-            // backend-side error
-            errorMessage = `Erro: código - ${error.status}<br>, Mensagem: ${error.message}`;
+            switch (error.status) {
+                case 404:
+                    errorMessage = 'Recurso não encontrado';
+                    break;
+                default:
+                    errorMessage = `Erro: código - ${error.status}<br>, Mensagem: ${error.message}`;
+            }
         }
         this.notifyMessage.error('Não foi possível realizar a operação', errorMessage);
         return throwError(error);
     }
 }
-
-// try{
-// //bloco código
-// }catch (e) {
-// //
-//  throw e;
-// }

@@ -26,6 +26,13 @@ export class EmployeeListComponent implements OnInit {
         totalItems: 0
     };
 
+    columns = [
+        {name: 'name', label: 'Nome', order: true},
+        {name: 'salary', label: 'Salário', order: true},
+        {label: 'Bônus'},
+        {label: 'Ações'},
+    ];
+
     constructor(
         private modalService: ModalService, private employeeHttp: EmployeeHttpService,
         private notifyMessage: NotifyMessageService) {
@@ -90,6 +97,9 @@ export class EmployeeListComponent implements OnInit {
     }
 
     getEmployees() {
+        // memory leak - vazamento de memória
+        // utilizando a memória ram
+        // observable  -->> notificar assinantes
         this.employeeHttp.list({
             search: this.search,
             sort: this.sortColumn,
@@ -98,20 +108,12 @@ export class EmployeeListComponent implements OnInit {
                 perPage: this.pagination.itemsPerPage
             }
         })
-            .subscribe(response => { //{ data: [], pagination: {total: 9, current_page: 2} }
-                this.pagination.totalItems = +response.headers.get('X-Total-Count');
-                this.employees = response.body; //{data: []}
-                console.log('primeiro');
-                console.log(this.employees[0].name);
+            .subscribe(data => {
+                this.pagination.totalItems = data.meta.total;
+                this.pagination.itemsPerPage = data.meta.perPage;
+                this.pagination.currentPage = data.meta.page;
+                this.employees = data.data;
             });
-            // }, (responseError: HttpErrorResponse) => {
-            //     if (responseError.status === 404) {
-            //         this.notifyMessage.error('Erro', 'Recurso não encontrado');
-            //     }
-            //
-            //
-            // });
-        console.log('segundo');
     }
 }
 

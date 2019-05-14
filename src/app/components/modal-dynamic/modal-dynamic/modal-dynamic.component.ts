@@ -1,7 +1,8 @@
 import {Component, ComponentFactoryResolver, ElementRef, EventEmitter, Injector, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
 import {ModalContentDirective} from '../modal-content.directive';
 import {ModalRefService} from '../modal-ref.service';
-import {ReplaySubject} from 'rxjs';
+import {Observable, ReplaySubject} from 'rxjs';
+import {first} from 'rxjs/operators';
 
 declare const $;
 
@@ -20,8 +21,8 @@ declare const $;
 })
 export class ModalDynamicComponent implements OnInit, OnDestroy {
 
-    onHide: ReplaySubject<any> = new ReplaySubject(1);
-    onShow: ReplaySubject<any> = new ReplaySubject(1);
+    private _onHide: ReplaySubject<any> = new ReplaySubject(1);
+    private _onShow: ReplaySubject<any> = new ReplaySubject(1);
 
     @ViewChild(ModalContentDirective) modalContent: ModalContentDirective;
     modalRef: ModalRefService;
@@ -39,6 +40,14 @@ export class ModalDynamicComponent implements OnInit, OnDestroy {
     ngOnInit() {
 
 
+    }
+
+    get onHide(): Observable<any> {
+        return this._onHide.pipe(first());
+    }
+
+    get onShow(): Observable<any> {
+        return this._onShow.pipe(first());
     }
 
     mount(modalImplementedComponent, context = {}): ModalRefService { //modal especifico

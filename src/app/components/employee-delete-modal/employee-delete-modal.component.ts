@@ -3,6 +3,7 @@ import {ModalRefService} from '../modal-dynamic/modal-ref.service';
 import {NotifyMessageService} from '../../services/notify-message.service';
 import {Employee} from '../../models';
 import {EmployeeHttpService} from '../../services/employee-http.service';
+import {Observable} from 'rxjs';
 
 @Component({
     selector: 'employee-delete-modal',
@@ -12,26 +13,22 @@ import {EmployeeHttpService} from '../../services/employee-http.service';
 export class EmployeeDeleteModalComponent implements OnInit {
 
     employeeId: number;
-    employee: Employee = {
-        name: '',
-        salary: 1,
-        bonus: 0
-    };
+    employee$: Observable<Employee>;
 
     constructor(private employeeHttp: EmployeeHttpService, private modalRef: ModalRefService, private notifyMessage: NotifyMessageService) {
         this.employeeId = this.modalRef.context['employeeId'];
     }
 
     ngOnInit() {
-        this.employeeHttp.get(this.employeeId)
-            .subscribe(data => this.employee = data); //{name, salary, bonus}
+        this.employee$ = this.employeeHttp.get(this.employeeId);
     }
 
-    destroy() {
+    async destroy() {
+        const employee = await this.employee$.toPromise();
         this.employeeHttp.delete(this.employeeId)
-            .subscribe(data => {
-                this.modalRef.hide({employee: this.employee, submitted: true});
-                this.notifyMessage.success('Sucesso', `O empregado <strong>${this.employee.name}</strong> foi excluído com sucesso`);
-            });
+             .subscribe(data => {
+                 this.modalRef.hide({employee, submitted: true});
+                 this.notifyMessage.success('Sucesso', `O empregado <strong>${employee.name}</strong> foi excluído com sucesso`);
+             });
     }
 }

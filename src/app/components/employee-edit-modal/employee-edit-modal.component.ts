@@ -17,14 +17,18 @@ export class EmployeeEditModalComponent implements OnInit {
         salary: 1,
         bonus: 0
     };
+    error = false;
 
     constructor(private employeeHttp: EmployeeHttpService, private modalRef: ModalRefService, private notifyMessage: NotifyMessageService) {
         this.employeeId = this.modalRef.context['employeeId'];
     }
 
-    ngOnInit() {
-        this.employeeHttp.get(this.employeeId)
-            .subscribe(data => this.employee = data); //{name, salary, bonus}
+    async ngOnInit() {
+        try {
+            this.employee = await this.employeeHttp.get(this.employeeId).toPromise();
+        } catch (e) {
+            this.error = true;
+        }
     }
 
     editEmployee(event) {

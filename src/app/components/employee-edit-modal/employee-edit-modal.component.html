@@ -3,26 +3,28 @@
 </modal-title>
 
 <form (submit)="editEmployee()">
-    <modal-body>
-        <div>
-            <div class="form-group">
-                <label>Nome</label>
-                <input class="form-control" name="name" type="text" [(ngModel)]="employee.name">
+    <fieldset [disabled]="error">
+        <modal-body>
+            <div>
+                <div class="form-group">
+                    <label>Nome</label>
+                    <input class="form-control" name="name" type="text" [(ngModel)]="employee.name">
+                </div>
+                <div class="form-group">
+                    <label>Salario</label>
+                    <input class="form-control" name="salary" type="text" [(ngModel)]="employee.salary">
+                </div>
+                <div class="form-group" [hidden]="employee.salary >= 1000">
+                    <label>Bonus</label>
+                    <input class="form-control" name="bonus" type="text" [(ngModel)]="employee.bonus">
+                </div>
             </div>
-            <div class="form-group">
-                <label>Salario</label>
-                <input class="form-control" name="salary" type="text" [(ngModel)]="employee.salary">
+        </modal-body>
+        <modal-footer>
+            <div>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary">Editar</button>
             </div>
-            <div class="form-group" [hidden]="employee.salary >= 1000">
-                <label>Bonus</label>
-                <input class="form-control" name="bonus" type="text" [(ngModel)]="employee.bonus">
-            </div>
-        </div>
-    </modal-body>
-    <modal-footer>
-        <div>
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            <button type="submit" class="btn btn-primary">Editar</button>
-        </div>
-    </modal-footer>
+        </modal-footer>
+    </fieldset>
 </form>
