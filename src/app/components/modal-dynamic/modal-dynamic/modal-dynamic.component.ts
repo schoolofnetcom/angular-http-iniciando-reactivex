@@ -1,7 +1,7 @@
 import {Component, ComponentFactoryResolver, ElementRef, EventEmitter, Injector, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
 import {ModalContentDirective} from '../modal-content.directive';
 import {ModalRefService} from '../modal-ref.service';
-import {Observable, ReplaySubject} from 'rxjs';
+import {ReplaySubject, Subject} from 'rxjs';
 import {first} from 'rxjs/operators';
 
 declare const $;
@@ -42,15 +42,15 @@ export class ModalDynamicComponent implements OnInit, OnDestroy {
 
     }
 
-    get onHide(): Observable<any> {
-        return this._onHide.pipe(first());
+    get onHide(): Subject<any> {
+        return this._onHide.pipe(first()) as Subject<any>;
     }
 
-    get onShow(): Observable<any> {
-        return this._onShow.pipe(first());
+    get onShow(): Subject<any> {
+        return this._onShow.pipe(first()) as Subject<any>;
     }
 
-    mount(modalImplementedComponent, context = {}): ModalRefService { //modal especifico
+    mount(modalImplementedComponent, context = {}): ModalRefService { // modal especifico
         this.contextModal = context;
         const componentFactory = this.componentFactoryResolver
             .resolveComponentFactory(modalImplementedComponent);
@@ -92,7 +92,7 @@ export class ModalDynamicComponent implements OnInit, OnDestroy {
 
     private registerEvents() {
         $(this.divModal).on('hidden.bs.modal', (e) => {
-            //console.log('escondido', e);
+            // console.log('escondido', e);
             this.onHide.next({
                 event: e,
                 data: this.hideEventData
@@ -100,7 +100,7 @@ export class ModalDynamicComponent implements OnInit, OnDestroy {
         });
 
         $(this.divModal).on('shown.bs.modal', (e) => {
-            //console.log('mostrado', e);
+            // console.log('mostrado', e);
             this.onShow.next({
                 event: e,
                 data: this.showEventData
@@ -109,7 +109,7 @@ export class ModalDynamicComponent implements OnInit, OnDestroy {
     }
 
     private get divModal(): HTMLElement {
-        const nativeElement: HTMLElement = this.element.nativeElement; //modal
+        const nativeElement: HTMLElement = this.element.nativeElement; // modal
         return nativeElement.firstChild as HTMLElement;
     }
 
